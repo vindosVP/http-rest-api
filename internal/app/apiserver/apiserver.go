@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"github.com/vindosVp/http-rest-api/internal/app/store"
 	"io"
 	"net/http"
 	"time"
@@ -13,6 +14,7 @@ type ApiServer struct {
 	config *Config
 	logger *logrus.Logger
 	router *mux.Router
+	store  *store.Store
 }
 
 func New(config *Config) *ApiServer {
@@ -36,6 +38,15 @@ func (s *ApiServer) configureRouter() {
 	s.router.HandleFunc("/heartbeat", s.handleHeartbeat())
 }
 
+func (s *ApiServer) ConfigureStore() error {
+	st := store.New(s.config.Store)
+	if err := st.Open(); err != nil {
+		return err
+	}
+	s.store = st
+	return nil
+}
+
 func (s *ApiServer) handleHeartbeat() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		location, err := time.LoadLocation("Europe/Moscow")
@@ -54,7 +65,14 @@ func (s *ApiServer) Start() error {
 	if err := s.configureLogger(); err != nil {
 		return err
 	}
+
 	s.configureRouter()
+
+	s.logger.Info("Connecting to DB...")
+	if err := s.ConfigureStore(); err != nil {
+		return err
+	}
+	s.logger.Info("Connected successfully")
 	s.logger.Info(fmt.Sprintf("Server listening on %s", s.config.BindAddr))
 
 	return http.ListenAndServe(s.config.BindAddr, s.router)
