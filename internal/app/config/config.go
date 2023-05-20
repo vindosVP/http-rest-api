@@ -10,7 +10,7 @@ import (
 type Config struct {
 	Sever struct {
 		BindAddr string `yaml:"bind_addr"`
-	} `yaml:"sever"`
+	} `yaml:"server"`
 
 	LogLevel string `yaml:"log_level"`
 
