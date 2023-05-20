@@ -19,13 +19,13 @@ func main() {
 
 	flag.Parse()
 
-	config, err := config.NewConfig(configPath)
+	cfg, err := config.NewConfig(configPath)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	s := apiserver.New(config)
+	s := apiserver.New(cfg)
 
 	if err := s.Start(); err != nil {
 		log.Fatalln(err)
