@@ -1,5 +1,5 @@
 CREATE TABLE users(
-                      id bigserial not null primary key,
+                      uuid uuid not null primary key default uuid_generate_v4(),
                       email varchar not null unique,
                       encrypted_password varchar not null
 );
