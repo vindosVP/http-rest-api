@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"github.com/vindosVp/http-rest-api/internal/app/config"
 	"github.com/vindosVp/http-rest-api/internal/app/store"
 	"io"
 	"net/http"
@@ -11,13 +12,13 @@ import (
 )
 
 type ApiServer struct {
-	config *Config
+	config *config.Config
 	logger *logrus.Logger
 	router *mux.Router
 	store  *store.Store
 }
 
-func New(config *Config) *ApiServer {
+func New(config *config.Config) *ApiServer {
 	return &ApiServer{
 		config: config,
 		logger: logrus.New(),
@@ -39,7 +40,7 @@ func (s *ApiServer) configureRouter() {
 }
 
 func (s *ApiServer) ConfigureStore() error {
-	st := store.New(s.config.Store)
+	st := store.New(s.config, s.logger)
 	if err := st.Open(); err != nil {
 		return err
 	}
@@ -68,12 +69,10 @@ func (s *ApiServer) Start() error {
 
 	s.configureRouter()
 
-	s.logger.Info("Connecting to DB...")
 	if err := s.ConfigureStore(); err != nil {
 		return err
 	}
-	s.logger.Info("Connected successfully")
-	s.logger.Info(fmt.Sprintf("Server listening on %s", s.config.BindAddr))
+	s.logger.Info(fmt.Sprintf("Server listening on %s", s.config.Sever.BindAddr))
 
-	return http.ListenAndServe(s.config.BindAddr, s.router)
+	return http.ListenAndServe(s.config.Sever.BindAddr, s.router)
 }

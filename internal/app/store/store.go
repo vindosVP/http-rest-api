@@ -2,18 +2,23 @@ package store
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
+	"github.com/vindosVp/http-rest-api/internal/app/config"
 )
 
 type Store struct {
-	config         *Config
+	config         *config.Config
 	db             *sql.DB
+	logger         *logrus.Logger
 	UserRepository *UserRepository
 }
 
-func New(config *Config) *Store {
+func New(config *config.Config, logger *logrus.Logger) *Store {
 	return &Store{
 		config: config,
+		logger: logger,
 	}
 }
 
@@ -28,7 +33,10 @@ func (s *Store) User() *UserRepository {
 }
 
 func (s *Store) Open() error {
-	db, err := sql.Open("postgres", s.config.DatabaseURL)
+	s.logger.Info("Connecting to database...")
+	cStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		s.config.DB.Host, s.config.DB.Port, s.config.DB.User, s.config.DB.Password, s.config.DB.DBName)
+	db, err := sql.Open("postgres", cStr)
 	if err != nil {
 		return err
 	}
@@ -36,6 +44,7 @@ func (s *Store) Open() error {
 		return err
 	}
 	s.db = db
+	s.logger.Info("Connected successful..")
 	return nil
 }
 

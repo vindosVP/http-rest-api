@@ -8,7 +8,7 @@ import (
 )
 
 func TestUserRepository_Create(t *testing.T) {
-	s, teardown := store.TestStore(t, databaseURL)
+	s, teardown := store.TestStore(t)
 	defer teardown("users")
 
 	u, err := s.User().Create(&model.User{
@@ -19,7 +19,7 @@ func TestUserRepository_Create(t *testing.T) {
 }
 
 func TestUserRepository_FindByEmail(t *testing.T) {
-	s, teardown := store.TestStore(t, databaseURL)
+	s, teardown := store.TestStore(t)
 	defer teardown("users")
 
 	email := "user@example.org"

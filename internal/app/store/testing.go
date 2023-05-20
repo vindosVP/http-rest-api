@@ -2,15 +2,21 @@ package store
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
+	"github.com/vindosVp/http-rest-api/internal/app/config"
 	"strings"
 	"testing"
 )
 
-func TestStore(t *testing.T, databaseURL string) (*Store, func(...string)) {
+func TestStore(t *testing.T) (*Store, func(...string)) {
 	t.Helper()
-	config := NewConfig()
-	config.DatabaseURL = databaseURL
-	s := New(config)
+	cfg, err := config.NewConfig("../../../configs/apiserver_test.yaml")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := New(cfg, logrus.New())
 	if err := s.Open(); err != nil {
 		t.Fatal(err)
 	}
