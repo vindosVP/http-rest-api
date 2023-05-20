@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"github.com/BurntSushi/toml"
 	"github.com/vindosVp/http-rest-api/internal/app/apiserver"
+	"github.com/vindosVp/http-rest-api/internal/app/config"
 	"log"
 )
 
@@ -12,20 +12,20 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configPath, "config-path", "configs/apiserver.toml", "path to config file")
+	flag.StringVar(&configPath, "config-path", "config/apiserver.yaml", "path to config file")
 }
 
 func main() {
 
 	flag.Parse()
 
-	config := apiserver.NewConfig()
-	_, err := toml.DecodeFile(configPath, config)
+	cfg, err := config.NewConfig(configPath)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	s := apiserver.New(config)
+	s := apiserver.New(cfg)
 
 	if err := s.Start(); err != nil {
 		log.Fatalln(err)

@@ -1,0 +1,10 @@
+server:
+    bind_addr: ":8080"
+
+log_level: "debug"
+
+db:
+    host: "localhost"
+    port: "5432"
+    user: "vadim"
+    db_name: "restapi_dev"
