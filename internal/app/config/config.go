@@ -1,7 +1,7 @@
 package config
 
 import (
-	"errors"
+	"github.com/vindosVp/http-rest-api/internal/app/envconfig"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
@@ -41,13 +41,8 @@ func NewConfig(cPath string) (*Config, error) {
 		return nil, err
 	}
 
-	dbPwd, ex := os.LookupEnv("DB_PWD")
-
-	if !ex {
-		return nil, errors.New("no env variable DB_PWD found")
-	} else {
-		config.DB.Password = dbPwd
-	}
+	envConf := envConfig.New()
+	config.DB.Password = envConf.DBConfig.DBPwd
 
 	return config, nil
 
