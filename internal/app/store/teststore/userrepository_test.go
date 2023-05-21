@@ -1,33 +1,32 @@
-package store_test
+package teststore_test
 
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vindosVp/http-rest-api/internal/app/model"
 	"github.com/vindosVp/http-rest-api/internal/app/store"
+	"github.com/vindosVp/http-rest-api/internal/app/store/teststore"
 	"testing"
 )
 
 func TestUserRepository_Create(t *testing.T) {
-	s, teardown := store.TestStore(t)
-	defer teardown("users")
+	s := teststore.New()
 
-	u, err := s.User().Create(model.TestUser(t))
-	assert.NoError(t, err)
+	u := model.TestUser(t)
+	assert.NoError(t, s.User().Create(u))
 	assert.NotNil(t, u)
 }
 
 func TestUserRepository_FindByEmail(t *testing.T) {
-	s, teardown := store.TestStore(t)
-	defer teardown("users")
+	s := teststore.New()
 
 	email := "user@example.org"
 
 	_, err := s.User().FindByEmail(email)
-	assert.Error(t, err)
+	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
 	u := model.TestUser(t)
 	u.Email = email
-	_, err = s.User().Create(u)
+	err = s.User().Create(u)
 
 	if err != nil {
 		t.Fatal(err)

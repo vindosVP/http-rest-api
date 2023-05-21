@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/vindosVp/http-rest-api/internal/app/apiserver"
 	"github.com/vindosVp/http-rest-api/internal/app/config"
+	"github.com/vindosVp/http-rest-api/internal/app/logger"
 	"log"
 )
 
@@ -25,10 +26,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s := apiserver.New(cfg)
+	if err := logger.ConfigureLogger(cfg.LogLevel); err != nil {
+		log.Fatal(err)
+	}
 
-	if err := s.Start(); err != nil {
-		log.Fatalln(err)
+	err = apiserver.Start(cfg)
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }
