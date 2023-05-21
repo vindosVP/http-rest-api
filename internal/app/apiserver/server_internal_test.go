@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/stretchr/testify/assert"
+	"github.com/vindosVp/http-rest-api/internal/app/logger"
 	"github.com/vindosVp/http-rest-api/internal/app/model"
 	"github.com/vindosVp/http-rest-api/internal/app/store/teststore"
 	"net/http"
@@ -17,6 +18,8 @@ import (
 func TestServer_HandleUsersCreate(t *testing.T) {
 
 	s := newServer(teststore.New(), sessions.NewCookieStore([]byte("secret")))
+
+	_ = logger.ConfigureLogger("debug")
 
 	testCases := []struct {
 		name         string
@@ -141,7 +144,7 @@ func TestServer_AutenticateUser(t *testing.T) {
 		{
 			name: "authenticated",
 			cookieValue: map[interface{}]interface{}{
-				"user_id": u.UUID.String(),
+				"user_uuid": u.UUID.String(),
 			},
 			expectedCode: http.StatusOK,
 		},
