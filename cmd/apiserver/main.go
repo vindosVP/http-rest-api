@@ -27,7 +27,7 @@ func main() {
 	}
 
 	if err := logger.ConfigureLogger(cfg.LogLevel); err != nil {
-		log.Fatal(err)
+		panic("logger configuring failed")
 	}
 
 	err = apiserver.Start(cfg)

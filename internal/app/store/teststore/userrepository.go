@@ -20,12 +20,15 @@ func (ur *UserRepository) Create(u *model.User) error {
 	if err := u.BeforeCreate(); err != nil {
 		return err
 	}
-	ur.users[u.Email] = u
+
 	newuuid, err := uuid.NewUUID()
 	if err != nil {
 		return err
 	}
 	u.UUID = newuuid
+
+	ur.users[u.Email] = u
+
 	return nil
 }
 

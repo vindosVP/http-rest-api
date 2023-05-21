@@ -10,18 +10,23 @@ import (
 )
 
 func TestUserRepository_Create(t *testing.T) {
+
+	_ = logger.ConfigureLogger("debug")
+
 	db, teardown := sqlstore.TestDB(t)
-	s := sqlstore.New(db, logger.GetLogger())
+
+	s := sqlstore.New(db)
 	defer teardown("users")
 
-	u := model.TestUser(t)
+	u := model.TestUser()
 	assert.NoError(t, s.User().Create(u))
 	assert.NotNil(t, u)
 }
 
 func TestUserRepository_FindByEmail(t *testing.T) {
+
 	db, teardown := sqlstore.TestDB(t)
-	s := sqlstore.New(db, logger.GetLogger())
+	s := sqlstore.New(db)
 	defer teardown("users")
 
 	email := "user@example.org"
@@ -29,7 +34,7 @@ func TestUserRepository_FindByEmail(t *testing.T) {
 	_, err := s.User().FindByEmail(email)
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
-	u := model.TestUser(t)
+	u := model.TestUser()
 	u.Email = email
 	err = s.User().Create(u)
 

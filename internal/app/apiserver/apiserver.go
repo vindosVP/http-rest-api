@@ -3,6 +3,7 @@ package apiserver
 import (
 	"database/sql"
 	"fmt"
+	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
 	"github.com/vindosVp/http-rest-api/internal/app/config"
 	"github.com/vindosVp/http-rest-api/internal/app/logger"
@@ -22,8 +23,9 @@ func Start(conf *config.Config) error {
 			logger.GetLogger().Fatal(err)
 		}
 	}(db)
-	store := sqlstore.New(db, logger.GetLogger())
-	s := newServer(store)
+	store := sqlstore.New(db)
+	sessionsStore := sessions.NewCookieStore([]byte(conf.SessionKey))
+	s := newServer(store, sessionsStore)
 	logger.GetLogger().Info(fmt.Sprintf("Server listening on %s", conf.Sever.BindAddr))
 	return http.ListenAndServe(conf.Sever.BindAddr, s)
 }

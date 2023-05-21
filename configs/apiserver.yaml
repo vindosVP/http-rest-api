@@ -8,3 +8,5 @@ db:
     port: "5432"
     user: "vadim"
     db_name: "restapi_dev"
+
+session_key : "825A731443BA8CBB78FA538E2E116"

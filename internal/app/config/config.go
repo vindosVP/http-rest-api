@@ -23,6 +23,8 @@ type Config struct {
 	LogLevel string `yaml:"log_level"`
 
 	DB DBConfig `yaml:"db"`
+
+	SessionKey string `yaml:"session_key"`
 }
 
 func NewConfig(cPath string) (*Config, error) {
