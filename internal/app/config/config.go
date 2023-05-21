@@ -7,6 +7,14 @@ import (
 	"os"
 )
 
+type DBConfig struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string
+	DBName   string `yaml:"db_name"`
+}
+
 type Config struct {
 	Sever struct {
 		BindAddr string `yaml:"bind_addr"`
@@ -14,13 +22,7 @@ type Config struct {
 
 	LogLevel string `yaml:"log_level"`
 
-	DB struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
-		User     string `yaml:"user"`
-		Password string
-		DBName   string `yaml:"db_name"`
-	} `yaml:"db"`
+	DB DBConfig `yaml:"db"`
 }
 
 func NewConfig(cPath string) (*Config, error) {

@@ -1,78 +1,47 @@
 package apiserver
 
 import (
+	"database/sql"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
+	_ "github.com/lib/pq"
 	"github.com/vindosVp/http-rest-api/internal/app/config"
-	"github.com/vindosVp/http-rest-api/internal/app/store"
-	"io"
+	"github.com/vindosVp/http-rest-api/internal/app/logger"
+	"github.com/vindosVp/http-rest-api/internal/app/store/sqlstore"
 	"net/http"
-	"time"
 )
 
-type ApiServer struct {
-	config *config.Config
-	logger *logrus.Logger
-	router *mux.Router
-	store  *store.Store
-}
-
-func New(config *config.Config) *ApiServer {
-	return &ApiServer{
-		config: config,
-		logger: logrus.New(),
-		router: mux.NewRouter(),
-	}
-}
-
-func (s *ApiServer) configureLogger() error {
-	level, err := logrus.ParseLevel(s.config.LogLevel)
+func Start(conf *config.Config) error {
+	logger.GetLogger().Info("Starting server...")
+	db, err := newDB(conf.DB)
 	if err != nil {
 		return err
 	}
-	s.logger.SetLevel(level)
-	return nil
-}
-
-func (s *ApiServer) configureRouter() {
-	s.router.HandleFunc("/heartbeat", s.handleHeartbeat())
-}
-
-func (s *ApiServer) ConfigureStore() error {
-	st := store.New(s.config, s.logger)
-	if err := st.Open(); err != nil {
-		return err
-	}
-	s.store = st
-	return nil
-}
-
-func (s *ApiServer) handleHeartbeat() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		location, err := time.LoadLocation("Europe/Moscow")
+	defer func(db *sql.DB) {
+		err := db.Close()
 		if err != nil {
-			s.logger.Fatal(err)
+			logger.GetLogger().Fatal(err)
 		}
-		timeNow := time.Now().UTC().In(location).Format("2006-01-02T15:04:05-0700")
-		_, err = io.WriteString(w, fmt.Sprintf("[%v] server running", timeNow))
-		if err != nil {
-			s.logger.Error(err)
-		}
-	}
+	}(db)
+	store := sqlstore.New(db, logger.GetLogger())
+	s := newServer(store)
+	logger.GetLogger().Info(fmt.Sprintf("Server listening on %s", conf.Sever.BindAddr))
+	return http.ListenAndServe(conf.Sever.BindAddr, s)
 }
 
-func (s *ApiServer) Start() error {
-	if err := s.configureLogger(); err != nil {
-		return err
+func newDB(dbConf config.DBConfig) (*sql.DB, error) {
+	logger.GetLogger().Info("Connecting to database...")
+
+	cStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		dbConf.Host, dbConf.Port, dbConf.User, dbConf.Password, dbConf.DBName)
+	db, err := sql.Open("postgres", cStr)
+	if err != nil {
+		return nil, err
+	}
+	if err := db.Ping(); err != nil {
+		return nil, err
 	}
 
-	s.configureRouter()
+	logger.GetLogger().Info("Connected successful...")
 
-	if err := s.ConfigureStore(); err != nil {
-		return err
-	}
-	s.logger.Info(fmt.Sprintf("Server listening on %s", s.config.Sever.BindAddr))
-
-	return http.ListenAndServe(s.config.Sever.BindAddr, s.router)
+	return db, nil
 }
