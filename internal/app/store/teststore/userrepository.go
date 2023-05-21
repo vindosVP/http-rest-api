@@ -8,7 +8,7 @@ import (
 
 type UserRepository struct {
 	store *Store
-	users map[string]*model.User
+	users map[uuid.UUID]*model.User
 }
 
 func (ur *UserRepository) Create(u *model.User) error {
@@ -27,14 +27,26 @@ func (ur *UserRepository) Create(u *model.User) error {
 	}
 	u.UUID = newuuid
 
-	ur.users[u.Email] = u
+	ur.users[u.UUID] = u
 
 	return nil
 }
 
 func (ur *UserRepository) FindByEmail(email string) (*model.User, error) {
 
-	u, ok := ur.users[email]
+	for _, u := range ur.users {
+		if u.Email == email {
+			return u, nil
+		}
+	}
+
+	return nil, store.ErrRecordNotFound
+
+}
+
+func (ur *UserRepository) Find(uuid uuid.UUID) (*model.User, error) {
+
+	u, ok := ur.users[uuid]
 	if !ok {
 		return nil, store.ErrRecordNotFound
 	}

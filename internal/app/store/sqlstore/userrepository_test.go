@@ -1,6 +1,7 @@
 package sqlstore_test
 
 import (
+	uuid2 "github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/vindosVp/http-rest-api/internal/app/logger"
 	"github.com/vindosVp/http-rest-api/internal/app/model"
@@ -45,4 +46,32 @@ func TestUserRepository_FindByEmail(t *testing.T) {
 	u, err = s.User().FindByEmail(email)
 	assert.NoError(t, err)
 	assert.NotNil(t, u)
+}
+
+func TestUserRepository_Find(t *testing.T) {
+
+	db, teardown := sqlstore.TestDB(t)
+	s := sqlstore.New(db)
+	defer teardown("users")
+
+	uuid, err := uuid2.NewUUID()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = s.User().Find(uuid)
+	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
+
+	u := model.TestUser()
+	err = s.User().Create(u)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	u, err = s.User().Find(u.UUID)
+	assert.NoError(t, err)
+	assert.NotNil(t, u)
+
 }
