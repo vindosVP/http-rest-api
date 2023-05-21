@@ -7,7 +7,7 @@ import (
 )
 
 func TestUser_BeforeCreate(t *testing.T) {
-	u := model.TestUser(t)
+	u := model.TestUser()
 	assert.NoError(t, u.BeforeCreate())
 	assert.NotEmpty(t, u.EncryptedPassword)
 }
@@ -26,7 +26,7 @@ func TestUser_Validate(t *testing.T) {
 	testCases = append(testCases, TestCase{
 		name: "valid",
 		u: func() *model.User {
-			return model.TestUser(t)
+			return model.TestUser()
 		},
 		isValid: true,
 	})
@@ -34,7 +34,7 @@ func TestUser_Validate(t *testing.T) {
 	testCases = append(testCases, TestCase{
 		name: "with encrypted pwd",
 		u: func() *model.User {
-			u := model.TestUser(t)
+			u := model.TestUser()
 			u.Password = ""
 			u.EncryptedPassword = "encPwd"
 			return u
@@ -45,7 +45,7 @@ func TestUser_Validate(t *testing.T) {
 	testCases = append(testCases, TestCase{
 		name: "empty email",
 		u: func() *model.User {
-			u := model.TestUser(t)
+			u := model.TestUser()
 			u.Email = ""
 			return u
 		},
@@ -55,7 +55,7 @@ func TestUser_Validate(t *testing.T) {
 	testCases = append(testCases, TestCase{
 		name: "invalid email",
 		u: func() *model.User {
-			u := model.TestUser(t)
+			u := model.TestUser()
 			u.Email = "invalid"
 			return u
 		},
@@ -65,7 +65,7 @@ func TestUser_Validate(t *testing.T) {
 	testCases = append(testCases, TestCase{
 		name: "empty password",
 		u: func() *model.User {
-			u := model.TestUser(t)
+			u := model.TestUser()
 			u.Password = ""
 			return u
 		},
@@ -75,7 +75,7 @@ func TestUser_Validate(t *testing.T) {
 	testCases = append(testCases, TestCase{
 		name: "short password",
 		u: func() *model.User {
-			u := model.TestUser(t)
+			u := model.TestUser()
 			u.Password = "1"
 			return u
 		},

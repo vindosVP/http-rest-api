@@ -3,20 +3,17 @@ package sqlstore
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
-	"github.com/sirupsen/logrus"
 	"github.com/vindosVp/http-rest-api/internal/app/store"
 )
 
 type Store struct {
 	db             *sql.DB
-	logger         *logrus.Logger
 	UserRepository *UserRepository
 }
 
-func New(db *sql.DB, logger *logrus.Logger) *Store {
+func New(db *sql.DB) *Store {
 	return &Store{
-		db:     db,
-		logger: logger,
+		db: db,
 	}
 }
 

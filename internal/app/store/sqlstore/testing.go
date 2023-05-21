@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/vindosVp/http-rest-api/internal/app/config"
+	"github.com/vindosVp/http-rest-api/internal/app/logger"
 	"strings"
 	"testing"
 )
@@ -11,6 +12,11 @@ import (
 func TestDB(t *testing.T) (*sql.DB, func(...string)) {
 	t.Helper()
 	conf, err := config.NewConfig("../../../../configs/apiserver_test.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = logger.ConfigureLogger(conf.LogLevel)
 	if err != nil {
 		t.Fatal(err)
 	}
