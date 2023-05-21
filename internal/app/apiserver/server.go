@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/sirupsen/logrus"
 	"github.com/vindosVp/http-rest-api/internal/app/logger"
 	"github.com/vindosVp/http-rest-api/internal/app/model"
 	"github.com/vindosVp/http-rest-api/internal/app/store"
@@ -34,6 +36,7 @@ var (
 const (
 	sessionName        = "session"
 	ctxKeyUser  ctxKey = iota
+	ctxKeyRequestID
 )
 
 type ctxKey int8
@@ -51,6 +54,9 @@ func newServer(store store.Store, sessionsStore sessions.Store) *server {
 }
 
 func (s *server) configureRouter() {
+	s.router.Use(s.setRequestID)
+	s.router.Use(s.logRequest)
+	s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
 	s.router.HandleFunc("/heartbeat", s.handleHeartbeat()).Methods(http.MethodGet)
 	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods(http.MethodPost)
 	s.router.HandleFunc("/sessions", s.handleSessionsCreate()).Methods(http.MethodPost)
@@ -69,6 +75,32 @@ func (s *server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 	if data != nil {
 		_ = json.NewEncoder(w).Encode(data)
 	}
+}
+
+func (s *server) setRequestID(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := uuid.New().String()
+		w.Header().Set("X-Request-ID", id)
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyRequestID, id)))
+	})
+}
+
+func (s *server) logRequest(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestLogger := logger.GetLogger().WithFields(logrus.Fields{
+			"remoteAddr": r.RemoteAddr,
+			"requestID":  r.Context().Value(ctxKeyRequestID),
+		})
+
+		requestLogger.Infof("started %s %s", r.Method, r.RequestURI)
+		timeStart := time.Now()
+		rw := &responseWriter{
+			w,
+			http.StatusOK,
+		}
+		next.ServeHTTP(rw, r)
+		requestLogger.Infof("competed with %d %s in %v", rw.code, http.StatusText(rw.code), time.Now().Sub(timeStart))
+	})
 }
 
 func (s *server) autenticateUser(next http.Handler) http.Handler {
