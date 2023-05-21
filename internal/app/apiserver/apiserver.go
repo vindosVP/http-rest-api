@@ -37,7 +37,6 @@ func (s *ApiServer) configureLogger() error {
 
 func (s *ApiServer) configureRouter() {
 	s.router.HandleFunc("/heartbeat", s.handleHeartbeat())
-	s.router.HandleFunc("/tratata", s.handleTratata())
 }
 
 func (s *ApiServer) ConfigureStore() error {
@@ -57,15 +56,6 @@ func (s *ApiServer) handleHeartbeat() http.HandlerFunc {
 		}
 		timeNow := time.Now().UTC().In(location).Format("2006-01-02T15:04:05-0700")
 		_, err = io.WriteString(w, fmt.Sprintf("[%v] server running", timeNow))
-		if err != nil {
-			s.logger.Error(err)
-		}
-	}
-}
-
-func (s *ApiServer) handleTratata() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := io.WriteString(w, fmt.Sprintf("tra ta ta, hello, everyone!"))
 		if err != nil {
 			s.logger.Error(err)
 		}
